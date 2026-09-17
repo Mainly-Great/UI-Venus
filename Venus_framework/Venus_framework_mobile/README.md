@@ -78,7 +78,7 @@ policy:
     model_url: "http://your-model-server/v1"
     model_name: "model"
     temperature: 0.1
-    n_img: 0
+    n_img: 2
 ```
 
 **Deploy with vLLM:**

@@ -13,7 +13,7 @@ policy:
     model_name: "model"
     api_key: ""
     temperature: 0.1
-    n_img: 0
+    n_img: 2
 
 app_mapping:
   config_file: "config/app_mapping.yaml"

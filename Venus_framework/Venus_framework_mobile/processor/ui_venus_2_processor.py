@@ -74,7 +74,7 @@ You may execute one of the following functions:
 
 
 class UIVenus2Processor(BaseProcessor):
-    def __init__(self, n_img=0, **kwargs):
+    def __init__(self, n_img=2, **kwargs):
         self.logger = logging.getLogger(__name__)
         self.action_description: List[str] = []
         self.n_img = n_img

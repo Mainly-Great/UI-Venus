@@ -96,7 +96,7 @@ class RunHandler:
         
         processor_kwargs = {}
         if policy_type == "ui_venus_2":
-            processor_kwargs["n_img"] = kwargs.pop("n_img", 0)
+            processor_kwargs["n_img"] = kwargs.pop("n_img", 2)
         policy = PolicyClass(self.runtime_context, **kwargs)
         processor = ProcessorClass(**processor_kwargs)
         
