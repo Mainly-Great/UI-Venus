@@ -1,0 +1,10 @@
+# Core
+numpy>=1.24
+openai>=1.0
+
+# ARC-AGI-3 toolkit (install from wheels on Kaggle, or pip locally)
+# arc-agi>=0.9.1
+# arcengine
+
+# Optional: PIL for grid-to-image conversion (for VLM input)
+Pillow>=10.0
