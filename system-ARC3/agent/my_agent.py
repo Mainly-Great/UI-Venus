@@ -169,7 +169,8 @@ class MyAgent:
     def __init__(self, game_id: str = "unknown", **kwargs: Any) -> None:
         self.game_id = game_id
 
-        self.model = ModelClient()
+        model_path = kwargs.get("model_path") or os.getenv("MODEL_PATH")
+        self.model = ModelClient(model_path=model_path) if model_path else ModelClient()
         self.perception = Perception()
         self.exploration = Exploration()
         self.rule_discovery = RuleDiscovery()

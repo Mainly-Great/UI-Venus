@@ -19,10 +19,13 @@ a meeting point.
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 from collections import deque
 
 import numpy as np
+
+logger = logging.getLogger("arc3_planner")
 
 from ..perception.perception import FrameAnalysis, Entity
 from ..memory.memory import Memory, MemoryEntry
@@ -39,11 +42,15 @@ class Planner:
         self._action_history: list[str] = []
         self._last_failed_direction: str | None = None
         self._expectation_violation: dict[str, Any] | None = None
+        self._model_failed: bool = False
+        self._model_skip_until_reset: bool = False
 
     def reset(self) -> None:
         self._action_history = []
         self._last_failed_direction = None
         self._expectation_violation = None
+        self._model_failed = False
+        self._model_skip_until_reset = False
         self.world_model.reset()
 
     def choose(
@@ -100,13 +107,20 @@ class Planner:
                 self._action_history.append(action)
                 return action, data
 
-        # 6. Consult model (only when stuck — not as primary strategy)
-        if self.model and self.model.is_available:
+        # 6. Consult model (only when stuck AND model hasn't failed this level)
+        if self.model and not self._model_skip_until_reset and self.model.is_available:
             model_action = self._consult_model(analysis, memory)
             if model_action:
                 action, data = model_action
                 self._action_history.append(action)
                 return action, data
+            else:
+                # Model returned no usable action — skip it for the rest of this level
+                self._model_skip_until_reset = True
+                logger.warning("[Planner] Model returned no action — skipping model calls until reset")
+        elif self.model and not self.model.is_available and not self._model_failed:
+            self._model_failed = True
+            logger.info("[Planner] Model server not available — running symbolic-only mode")
 
         # 7. Random valid action (last resort, prefer safe ones)
         return self._safe_random_action(analysis, memory)

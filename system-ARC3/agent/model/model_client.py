@@ -41,11 +41,15 @@ class ModelClient:
         api_base: str | None = None,
         api_key: str | None = None,
         model_name: str | None = None,
+        model_path: str | None = None,
     ) -> None:
         self.api_base = api_base or os.getenv("MODEL_API_BASE", "http://localhost:8000/v1")
         self.api_key = api_key or os.getenv("MODEL_API_KEY", "EMPTY")
         self.model_name = model_name or os.getenv("MODEL_NAME", "UI-Venus-2-9B")
+        self.model_path = model_path or os.getenv("MODEL_PATH", "")
         self._client = None
+        self._availability_cached: bool | None = None
+        self._availability_checked_at: float = 0
 
     def _get_client(self):
         if self._client is None:
@@ -186,8 +190,24 @@ class ModelClient:
 
     @property
     def is_available(self) -> bool:
+        """Check if the model server is actually reachable, not just importable.
+
+        Caches the result for 30 seconds to avoid hammering the server.
+        Returns False immediately if a previous check failed within the cache window.
+        """
+        import time
+        now = time.time()
+        if self._availability_cached is not None and (now - self._availability_checked_at) < 30:
+            return self._availability_cached
+
         try:
             client = self._get_client()
+            # Lightweight probe: list models (vLLM supports /v1/models)
+            client.models.list()
+            self._availability_cached = True
+            self._availability_checked_at = now
             return True
         except Exception:
+            self._availability_cached = False
+            self._availability_checked_at = now
             return False
